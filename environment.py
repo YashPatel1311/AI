@@ -67,7 +67,6 @@ class Node:
         self.cost=sys.maxsize
 
     def __str__(self):
-        config=self.config
         table = tabulate(self.config, tablefmt="fancy_grid")
         return f"{table}"
 
