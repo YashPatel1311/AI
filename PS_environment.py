@@ -195,7 +195,7 @@ class Node:
         return f"{table}"
 
     def calCost(self):
-        hn=32-self.config[1:].count(False)
+        hn=32-self.config.count(False)
 
         return hn
 
@@ -209,10 +209,12 @@ class PegSolitare:
 
     def __init__(self):
                     
-        initial =[True]*34
+        # initial = [False,False,False,True,False,False,False,True,True,True,True,True,False,False,True,True,True,True,True,False,False,True,True,True,False,False,False,False,True,False,False,False,False,False]
+        initial = [True]*34
         initial[17]=False
 
         self.root=Node(None,initial,0)
+        print(self.root)
         self.size=34
 
         self.board=Board()
@@ -236,9 +238,8 @@ class PegSolitare:
             if node.config[curr]==False:
                 continue
 
-            NewConfig = copy.deepcopy(node.config)
-            for direction in (0,1,3,2):
-
+            for direction in range(0,4):
+                NewConfig = copy.deepcopy(node.config)
                 if direction == 0 :
                     try:
                         Next=board[curr].up.idx
@@ -279,22 +280,3 @@ class PegSolitare:
                     result.append(Node(node,NewConfig,node.level+1))
 
         return result
-
-
-if __name__=="__main__":
-    NewGame=PegSolitare()
-    config=[True]*34
-
-    config[15]=False
-    config[24]=False
-    config[25]=False
-    config[28]=False
-
-    node=Node(None,config,0)
-
-    result=NewGame.moves(node)
-
-
-
-    for x in result:
-        print(x)
