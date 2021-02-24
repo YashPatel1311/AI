@@ -1,11 +1,11 @@
-from kSAT_Gen import Generator
 from kSAT_environment import Tree
 import sys
+from queue import PriorityQueue
 
 
 class agent:
 
-    def __init__(self,problem):
+    def __init__(self,k,n,m):
         '''
         k=no of var in each clause \n
         n=no of var \n
@@ -13,7 +13,7 @@ class agent:
 
         Output: List containing randomly generated clauses 
         '''
-        self.tree=Tree(problem)
+        self.tree=Tree(k,n,m)
         # self.k=k
         # self.n=n
         # self.m=m
@@ -22,7 +22,7 @@ class agent:
         problem=self.tree.problem
         n=problem.n
         for i in range(2**n-1):
-            result=problem.evaluate(i)
+            result=problem.evaluate(problem,i)
             if result != None:
                 return result
 
@@ -39,7 +39,7 @@ class agent:
 
             counter+=1
 
-            if childs!= None:
+            if len(childs)!=0:
 
                 if currNode.cost>childs[0].cost or currNode.cost>childs[1].cost:
 
@@ -59,26 +59,78 @@ class agent:
 
         return currNode,counter
 
-
     def BeamSearch(self,width):
+        frontier = PriorityQueue()
+        
+
+        # explored = self.explored
+        # self.Tree.root.cost = self.cal_cost(self.Tree.root,optimizer)
+        frontier.put(self.tree.root)
 
 
+        counter=0
 
-        return Node,counter
+        while not frontier.empty():
+            counter+=1
+            node = frontier.get()
+            # conf = node.config
+            # confStr = str(list(map(int,conf))).replace(",","").replace("[","").replace("]","").replace(" ","")
+            # explored[confStr]=node
+            
+            if node.cost==0:
+                return node,counter
+
+                
+            temp = PriorityQueue()
+            neighbours = self.tree.moves(node)
+            
+            for neighbour in neighbours:
+                temp.put(neighbour)
+
+            for i in range(frontier.qsize()):
+                
+                temp.put(frontier.get())
+
+            for i in range(min(width,temp.qsize())):
+
+                frontier.put(temp.get())
+
+            # neighbours=self.Trees.moves(node)
+
+            # for neighbour in neighbours:
+            #     neighbour.cost = self.width
+            # #   configuration = neighbour.config
+            # #   configurationStr = str(list(map(int,configuration))).replace(",","").replace("[","").replace("]","").replace(" ","")
+            # if configurationStr not in explored:
+            #     frontier.put(neighbour)
+            # else:
+            #     del(neighbour)
+
+        return node , counter
 
 
+    # def variableNeighbourhood():
+
+        
 
 
 
 if __name__=="__main__":
-    newProb=Generator(3,10,40)
-    print(newProb.problem)
-    agt=agent(newProb)
+    agt=agent(3,15,50)
+
+    result,iterations=agt.BeamSearch(4)
+    # print(result[-6:])
+    print("\nRemaining clauses:", result.cost)
+    print("\nNodes explored:", iterations)
+    print(result.config)
 
     result,iterations=agt.HillClimb()
     # print(result[-6:])
     print("\nRemaining clauses:", result.cost)
     print("\nNodes explored:", iterations)
     print(result.config)
+
+
+
 
 
