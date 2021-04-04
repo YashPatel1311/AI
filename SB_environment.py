@@ -1,0 +1,204 @@
+
+import sys
+from tabulate import tabulate
+import copy
+
+class Sokoban:
+
+    # workerPos -> (Tuple) initial position of Worker
+    # boxPos -> (List of tuples) initial position of all boxes
+    # goal -> (List of tuples) position of all goals
+
+    def __init__(self,board,boxPos,goal,workerPos):
+
+        self.board=board
+        self.goal=goal
+        self.root=Node(None,boxPos,workerPos[0],workerPos[1])
+
+    def moves(self,node):
+        
+        moves=[(-1,0),(1,0),(0,-1),(0,1)]
+        result=[]
+
+        for mv in moves:
+            newWPX=node.workerPosX +mv[0]
+            newWPY=node.workerPosY +mv[1]
+
+            if self.board[newWPX][newWPY]=="#":
+                continue
+
+            elif self.board[newWPX][newWPY]==" ":
+                
+                boxIdx=-1
+
+                #Finding which box will move
+                for i in range(len(node.boxPos)):
+                    if node.boxPos[i]==(newWPX,newWPY):
+                        boxIdx=i
+
+                if boxIdx==-1:
+                    result.append(Node(node,node.boxPos,newWPX,newWPY))
+                    continue
+
+                
+                print(boxIdx)
+
+                newBPX=newWPX+mv[0]
+                newBPY=newWPY+mv[1]  
+
+                if self.board[newBPX][newBPY]==" " and (newBPX,newBPY) not in node.boxPos:
+                    newBoxPos=copy.deepcopy(node.boxPos)
+                    newBoxPos[boxIdx]=(newBPX,newBPY)
+                    result.append(Node(node,newBoxPos,newWPX,newWPY))
+
+                else:
+                    continue
+
+        return result
+
+# def is_valid_value(self,char):
+#         if (
+#             char == ' ' or # floor
+#             char == '#' or # wall
+#             char == '@' or # worker on floor
+#             char == '.' or # goal
+#             char == '*' or # box on goal
+#             char == '$' or # box
+#             char == '+' ): # worker on goal
+#             return True
+#         else:
+#             return False
+
+# Level 1
+                # # # # 
+                #     # # # 
+                #         # 
+                #   $     # 
+                # # #   # # #
+                #   $   $   #
+                # . . @ . . #
+                #     $     #
+                # # #     # #
+                    # # # # 
+
+
+class Node:
+
+    def __init__(self,parent,boxPos,workerPosX,workerPosY):
+        self.parent=parent
+        self.boxPos=boxPos
+        self.workerPosX=workerPosX
+        self.workerPosY=workerPosY
+        try:
+            self.level=parent.level+1
+        except:
+            self.level=0
+        self.cost=0
+
+    # NodeObj1.Print(SBobj)
+
+    # workerPos -> (Tuple) initial position of Worker
+    # boxPos -> (List of tuples) initial position of all boxes
+    # goal -> (List of tuples) position of all goals
+    def Print(self,SBobj):
+        board=copy.deepcopy(SBobj.board)
+        row=len(SBobj.board)
+        col=len(SBobj.board[0])
+
+        for i in range(row):
+            for j in range(col):
+                if (i,j) in self.boxPos :
+                    board[i][j]="$"
+                    
+                if (i,j) in SBobj.goal :
+                    board[i][j]="."
+                    if (i,j) in self.boxPos :
+                        board[i][j]="*"
+
+        board[self.workerPosX][self.workerPosY]="@"
+        if (self.workerPosX,self.workerPosY) in SBobj.goal:
+            board[self.workerPosX][self.workerPosY]="+"
+
+
+        
+        # config=self.config[1:]
+        # for itm in range(len(config)):
+  
+        #   if config[itm] == True:
+        #     config[itm]="●"
+        #   elif config[itm] == False:
+        #     config[itm]=" "
+
+        # two=["╳", "╳"]
+        # config=two+config[:3]+two + two+config[3:6]+two + config[6:13] + config[13:20] + config[20:27] + two+config[27:30]+two + two+config[30:]+two
+
+        # temp = np.array(config)
+        # newtemp = temp.reshape(7,7)
+        config = board
+        table = tabulate(config, tablefmt="fancy_grid")
+        print(table)
+        return f"{table}"   
+
+if __name__=="__main__":
+
+    board=[
+	['#','#','#','#',' ',' ',' '],           
+    ['#',' ',' ','#','#','#',' '],  
+    ['#',' ',' ',' ',' ','#',' '],    
+    ['#',' ',' ',' ',' ','#',' '],  
+    ['#','#','#',' ','#','#','#'],  
+    ['#',' ',' ',' ',' ',' ','#'],  
+    ['#',' ',' ',' ',' ',' ','#'],  
+    ['#',' ',' ',' ',' ',' ','#'],  
+    ['#','#','#',' ',' ','#','#'],  
+    [' ',' ','#','#','#','#',' ']]
+
+
+    boxPos=[(3,2) , (5,2) , (5,4) , (7,3),(8,3)]  # write box position here
+    goalPos=[(6,1) , (6,2) , (6,4) , (6,5)]  # write goal position here
+    
+    workerPos=(6,3)
+
+    SBobj=Sokoban(board,boxPos,goalPos,workerPos)        
+    
+    children=SBobj.moves(SBobj.root)
+
+    for c in children:
+        c.Print(SBobj)
+
+
+# mat=[
+# 	   ['0','1','2','3','4','5','6']           
+# 	 0 ['#','#','#','#',' ',' ',' '],           
+#    1 ['#',' ',' ','#','#','#',' '],  
+#    2 ['#',' ',' ',' ',' ','#',' '],    
+#    3 ['#',' ','$',' ',' ','#',' '],  
+#    4 ['#','#','#',' ','#','#','#'],  
+#    5 ['#',' ','$',' ','$',' ','#'],  
+#    6 ['#','.','.','@','.','.','#'],  
+#    7 ['#',' ',' ','$',' ',' ','#'],  
+#    8 ['#','#','#',' ',' ','#','#'],  
+#    9 [' ',' ','#','#','#','#',' '],
+# ]
+    
+
+# temp=[
+#     ['0','1','2','3','4','5','6']
+# 	0 ['#','#','#','#',' ',' ',' '],           
+#   1 ['#',' ','$',' ',' ',' ',' '], 
+#   2 ['#',' ',' ',' ',' ',' ',' '],   
+#   3 ['#',' ',' ','$','$',' ',' '],  
+#   4 ['#',' ',' ','$','$',' ','#'],  
+#   5 ['#',' ',' ',' ',' ',' ','#'],  
+#   6 ['#',' ',' ','$','$',' ','#'],  
+#   7 ['#',' ','$','$',' ',' ','#'],  
+#   8 ['#','#','#',' ',' ','#','#'],  
+#   9 [' ',' ','#','#','#','#',' ']]
+
+
+
+
+'''
+i-1 & j-1 , i+1 & j-1 , i+1 & j+1 , i-1 & j+1
+
+'''
