@@ -95,7 +95,14 @@ class Node:
             self.level=0
         self.cost=0
 
-    # NodeObj1.Print(SBobj)
+    def __eq__(self,other):
+        if (self.workerPosX,self.workerPosY)==(other.workerPosX,other.workerPosY) and set(self.boxPos)==set(self.boxPos):
+            return True
+        else:
+            return False
+
+    def __lt__(self,other):
+        return not self.level<other.level
 
     # workerPos -> (Tuple) initial position of Worker
     # boxPos -> (List of tuples) initial position of all boxes
