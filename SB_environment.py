@@ -2,6 +2,8 @@
 import sys
 from tabulate import tabulate
 import copy
+from os import system
+
 
 class Sokoban:
 
@@ -17,7 +19,7 @@ class Sokoban:
 
     def moves(self,node):
         
-        moves=[(-1,0),(1,0),(0,-1),(0,1)]
+        moves=[(0,1),(1,0),(0,-1),(-1,0)]
         result=[]
 
         for mv in moves:
@@ -40,8 +42,6 @@ class Sokoban:
                     result.append(Node(node,node.boxPos,newWPX,newWPY))
                     continue
 
-                
-                print(boxIdx)
 
                 newBPX=newWPX+mv[0]
                 newBPY=newWPY+mv[1]  
@@ -95,19 +95,20 @@ class Node:
             self.level=0
         self.cost=0
 
-    def __eq__(self,other):
-        if (self.workerPosX,self.workerPosY)==(other.workerPosX,other.workerPosY) and set(self.boxPos)==set(self.boxPos):
-            return True
-        else:
-            return False
+    # def __eq__(self,other):
+    #     if (self.workerPosX,self.workerPosY)==(other.workerPosX,other.workerPosY) and set(self.boxPos)==set(self.boxPos):
+    #         return True
+    #     else:
+    #         return False
 
     def __lt__(self,other):
-        return not self.level<other.level
+        return self.level<other.level
 
     # workerPos -> (Tuple) initial position of Worker
     # boxPos -> (List of tuples) initial position of all boxes
     # goal -> (List of tuples) position of all goals
     def Print(self,SBobj):
+        cls = lambda: system('cls')
         board=copy.deepcopy(SBobj.board)
         row=len(SBobj.board)
         col=len(SBobj.board[0])

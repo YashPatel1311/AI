@@ -1,5 +1,4 @@
 from SB_environment import Sokoban,Node
-
 from queue import PriorityQueue
 
 
@@ -9,6 +8,7 @@ class Agent:
         self.sokoban = sokoban
         self.frontier = PriorityQueue()
         self.explored = {}
+        self.stack=[]
 
     def PBCheck(self, boxR,boxC, boxPos, parent,depth):
         board = self.sokoban.board
@@ -97,7 +97,7 @@ class Agent:
             return False
 
     def isGoal(self,node):
-        goal=self.sokoban.goalPos
+        goal=self.sokoban.goal
         boxPos=node.boxPos
 
         if goal==boxPos:
@@ -111,9 +111,9 @@ class Agent:
         srted=set(node.boxPos)
 
         for r,c in srted:
-            result=result+r+c
+            result=result+str(r)+str(c)
 
-        result=result+node.workerPosX+node.workerPosY
+        result=result+str(node.workerPosX)+str(node.workerPosY)
 
         return result
 
@@ -125,20 +125,21 @@ class Agent:
 
 
     def DFS(self):
-        frontier = self.frontier
+        frontier = self.stack
         explored = self.explored
         goal=self.sokoban.goal
     
-        frontier.put(self.sokoban.root)
+        frontier.append(self.sokoban.root)
         counter=0
 
         while not frontier.empty():
-
-            # if counter%10000==0:
-            #     print(counter)
-            counter+=1
             
-            node = frontier.get()
+            node = frontier.pop(-1)
+            node.Print(self.sokoban)
+            if counter%10000==0:
+                print(counter)
+                
+            counter+=1            
             
             # Add current node to explored
             explored[self.confStr(node)]=None
@@ -164,6 +165,7 @@ class Agent:
                     for boxR,boxC in child.boxPos:
                         if (boxR,boxC) not in goal:
                             if self.PBCheck(boxR,boxC,child.boxPos,(-1,-1),1):
+                                
                                 flag=True
                                 break
                             
@@ -171,73 +173,13 @@ class Agent:
                         del(child)
                         continue
 
-                    frontier.put(child)
+                    frontier.append(child)
 
                 else:
                     del(child)
                 
         return None
 
-
-
-    # def PBCheckPurana(self, boxPosX, boxPosY, boxPos, checkedBoxes):
-    #     board = self.sokoban.board
-    #     goal = self.sokoban.goal
-
-    #     checkedBoxes.append((boxPosX, boxPosY))
-
-    #     check =[((1, 0), (0, 1)), 
-    #             ((1, 0), (0, -1)), 
-    #             ((-1, 0), (0, 1)), 
-    #             ((-1, 0), (0, -1))]
-
-    #     for a, b in check:
-    #         adj1 = (boxPosX+a[0], boxPosY+a[1])
-    #         adj2 = (boxPosX+b[0], boxPosY+b[1])
-
-    #         # adj1 box and adj2 wall
-    #         # adj1 wall and adj2 box
-    #         # adj1 and 2 wall
-    #         # adj1 and 2 box
-
-    #         # Poor block waited for her neighbour's reply but he may be blocked! Sed lyf    
-
-    #         if adj1  in checkedBoxes and adj2 in checkedBoxes:
-    #             # return true only after checking that any of 4 boxes are not on goal position
-    #             if (adj1, adj2, (boxPosX, boxPosY), (adj1[0]+adj2[0], adj1[1]+adj2[1])) not in goal:
-    #                 return True
-
-    #         if (adj1 in boxPos or board[adj1[0]][adj1[1]] == "#") and (adj2 in boxPos or board[adj2[0]][adj2[1]] == "#"):
-
-    #             if board[adj1[0]][adj1[1]] == "#" and board[adj2[0]][adj2[1]] == "#":
-    #                 if (boxPosX, boxPosY) not in goal:
-    #                     return True
-
-    #             if adj1 in boxPos and adj1 not in checkedBoxes:
-    #                 blocked1 = self.PBCheckPurana(adj1[0], adj1[1],boxPos,checkedBoxes)
-    #                 if blocked1 and board[adj2[0]][adj2[1]] == "#":
-    #                     return True
-
-    #                 elif adj2 in boxPos and adj2 not in checkedBoxes:
-    #                     blocked2 = self.PBCheckPurana(adj2[0], adj2[1],boxPos,checkedBoxes)
-                        
-    #                     if blocked1 and blocked2:
-    #                         if (boxPosX, boxPosY) not in goal:
-    #                             return True
-
-    #             if adj2 in boxPos and adj2 not in checkedBoxes:
-    #                 blocked2 = self.PBCheckPurana(adj2[0], adj2[1],boxPos,checkedBoxes)
-    #                 if blocked2 and board[adj1[0]][adj1[1]] == "#":
-    #                     return True
-
-    #                 elif adj1 in boxPos and adj1 not in checkedBoxes:
-    #                     blocked2 = self.PBCheckPurana(adj1[0], adj1[1],boxPos,checkedBoxes)
-
-    #                     if blocked1 and blocked2:
-    #                         if (boxPosX, boxPosY) not in goal:
-    #                             return True 
-
-    #     return False
 
 
 if __name__=="__main__":
