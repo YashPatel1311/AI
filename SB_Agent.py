@@ -1,5 +1,6 @@
 from SB_environment import Sokoban,Node
 from queue import PriorityQueue
+import copy
 
 
 class Agent:
@@ -100,12 +101,28 @@ class Agent:
         goal=self.sokoban.goal
         boxPos=node.boxPos
 
-        if goal==boxPos:
+        if set(goal)==set(boxPos):
             return True
         else:
             return False
 
+    def calCost(self,node,goal):
+        boxPos=copy.deepcopy(node.boxPos)
+        boxPos.sort(key = lambda x: x[0] + x[1])
+
+        cost=0
+
+        for i in range(len(boxPos)):
+            cost+=abs(boxPos[i][0]-goal[i][0])+abs(boxPos[i][1]-goal[i][1])
+
+        return cost
+
+
     def confStr(self,node):
+        """
+           Function to convert boxPos and workerPos to string 
+           This function is used for hashing of configuration
+        """
         result=""
 
         srted=set(node.boxPos)
@@ -118,10 +135,10 @@ class Agent:
         return result
 
 
-    def printPath(self,node):
+    def printPath(self,node,filename):
         if(node != None):
-            self.printPath(node.parent)
-            node.Print(self.sokoban)        
+            self.printPath(node.parent,filename)
+            node.Print(self.sokoban,filename)        
 
 
     def DFS(self):
@@ -132,10 +149,10 @@ class Agent:
         frontier.append(self.sokoban.root)
         counter=0
 
-        while not frontier.empty():
+        while len(frontier)>0:
             
             node = frontier.pop(-1)
-            node.Print(self.sokoban)
+            # node.Print(self.sokoban)
             if counter%10000==0:
                 print(counter)
                 
@@ -180,41 +197,59 @@ class Agent:
                 
         return None
 
-
-
-if __name__=="__main__":
-    board=[
-	['#','#','#','#',' ',' ',' '],           
-    ['#',' ',' ','#','#','#',' '],  
-    ['#',' ',' ',' ',' ','#',' '],    
-    ['#',' ',' ',' ',' ','#',' '],  
-    ['#','#','#',' ','#','#','#'],  
-    ['#',' ',' ',' ',' ',' ','#'],  
-    ['#',' ',' ',' ',' ',' ','#'],  
-    ['#',' ',' ',' ',' ',' ','#'],  
-    ['#','#','#',' ',' ','#','#'],  
-    [' ',' ','#','#','#','#',' ']]
-
-    # board=[
-	# ['#','#','#','#',' ',' ',' '],           
-    # ['#',' ',' ','#','#','#',' '],  
-    # ['#',' ',' ',' ',' ','#',' '],    
-    # ['#',' ',' ',' ',' ','#',' '],  
-    # ['#','#','#',' ','#','#','#'],  
-    # ['#',' ',' ',' ',' ',' ','#'],  
-    # ['#',' ',' ','$','$',' ','#'],  
-    # ['#',' ','$','$','$',' ','#'],  
-    # ['#','#','#',' ',' ','#','#'],  
-    # [' ',' ','#','#','#','#',' ']]
-
-    boxPos=[(7,2),(7,3),(7,4),(6,3),(6,4)]  # write box position here
-    goalPos=[]  # write goal position here
+    def BFS(self):
+        frontier = self.frontier
+        explored = self.explored
+        goal=self.sokoban.goal
     
-    workerPos=(1,1)
+        frontier.put(self.sokoban.root)
+        counter=0
 
-    SBobj=Sokoban(board,boxPos,goalPos,workerPos)        
+        while not frontier.empty():
+            
+            node = frontier.get()
+            # node.Print(self.sokoban,"path.txt")
+            if counter%10000==0:
+                print(counter)
+                
+            counter+=1            
+            
+            # Add current node to explored
+            explored[self.confStr(node)]=None
 
-    agnt=Agent(SBobj)
-    isBlocked=agnt.PBCheck(7,2,SBobj.root.boxPos,(-1,-1),1)
+            # Check if current node is goal node
+            if self.isGoal(node):
+                return node,counter
 
-    print(isBlocked)
+            # Find children of current node
+            children=self.sokoban.moves(node)
+
+            # Check for deadlock in all children's configuration which are not on goal pos
+            # Calculate heuristic value for all valid child
+            # Push them to frontier
+            for child in children:
+
+                configurationStr = self.confStr(child)
+                if configurationStr not in explored:
+
+                # flag-> false means current configuration has no deadlock and is default behaviour    
+                # If any box which is not on goal position and is permanent blocked then there is a deadlock
+                    flag=False
+                    for boxR,boxC in child.boxPos:
+                        if (boxR,boxC) not in goal:
+                            if self.PBCheck(boxR,boxC,child.boxPos,(-1,-1),1):
+                                
+                                flag=True
+                                break
+                            
+                    if flag:
+                        del(child)
+                        continue
+                    
+                    child.cost=self.calCost(child,goal)+child.level     # cost = h(x) + g(x)
+                    frontier.put(child)
+
+                else:
+                    del(child)
+                
+        return None

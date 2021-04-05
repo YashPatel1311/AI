@@ -19,7 +19,7 @@ class Sokoban:
 
     def moves(self,node):
         
-        moves=[(0,1),(1,0),(0,-1),(-1,0)]
+        moves=[(-1,0),(0,-1),(1,0),(0,1)]
         result=[]
 
         for mv in moves:
@@ -102,12 +102,12 @@ class Node:
     #         return False
 
     def __lt__(self,other):
-        return self.level<other.level
+        return self.cost<other.cost
 
     # workerPos -> (Tuple) initial position of Worker
     # boxPos -> (List of tuples) initial position of all boxes
     # goal -> (List of tuples) position of all goals
-    def Print(self,SBobj):
+    def Print(self,SBobj,filename):
         cls = lambda: system('cls')
         board=copy.deepcopy(SBobj.board)
         row=len(SBobj.board)
@@ -127,25 +127,13 @@ class Node:
         if (self.workerPosX,self.workerPosY) in SBobj.goal:
             board[self.workerPosX][self.workerPosY]="+"
 
-
-        
-        # config=self.config[1:]
-        # for itm in range(len(config)):
-  
-        #   if config[itm] == True:
-        #     config[itm]="●"
-        #   elif config[itm] == False:
-        #     config[itm]=" "
-
-        # two=["╳", "╳"]
-        # config=two+config[:3]+two + two+config[3:6]+two + config[6:13] + config[13:20] + config[20:27] + two+config[27:30]+two + two+config[30:]+two
-
-        # temp = np.array(config)
-        # newtemp = temp.reshape(7,7)
         config = board
         table = tabulate(config, tablefmt="fancy_grid")
-        print(table)
-        return f"{table}"   
+        fp=open(filename,'a+',encoding="utf-8")
+        fp.write(table)
+        fp.write("\n")
+        fp.close()
+  
 
 if __name__=="__main__":
 
