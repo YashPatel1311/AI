@@ -18,8 +18,14 @@ class Sokoban:
         self.root=Node(None,boxPos,workerPos[0],workerPos[1])
 
     def moves(self,node):
-        
-        moves=[(-1,0),(0,-1),(1,0),(0,1)]
+        u=(-1,0)
+        d=(1,0)
+        l=(0,-1)
+        r=(0,1)
+        # moves=[(-1,0),(0,-1),(1,0),(0,1)]
+        moves=[
+            r,u,d,l
+]
         result=[]
 
         for mv in moves:

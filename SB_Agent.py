@@ -246,7 +246,8 @@ class Agent:
                         del(child)
                         continue
                     
-                    child.cost=self.calCost(child,goal)+child.level     # cost = h(x) + g(x)
+                    # child.cost=self.calCost(child,goal)+child.level     # cost = h(x) + g(x)
+                    child.cost=child.level
                     frontier.put(child)
 
                 else:
