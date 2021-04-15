@@ -110,7 +110,7 @@ class Agent:
         else:
             return False
 
-    def calCost(self,node,goal):
+    def heuristic(self,node,goal):
         boxPos=copy.deepcopy(node.boxPos)
         boxPos.sort(key = lambda x: x[0] + x[1])
 
@@ -122,7 +122,7 @@ class Agent:
         return cost
 
 
-    def confStr(self,node):
+    def conf2str(self,node):
         """
            Function to convert boxPos and workerPos to string 
            This function is used for hashing of configuration
@@ -171,7 +171,7 @@ class Agent:
             counter+=1            
             
             # Add current node to explored
-            explored[self.confStr(node)]=None
+            explored[self.conf2str(node)]=None
 
             # Check if current node is goal node
             if self.isGoal(node):
@@ -185,7 +185,7 @@ class Agent:
             # Push them to frontier
             for child in children:
 
-                configurationStr = self.confStr(child)
+                configurationStr = self.conf2str(child)
                 if configurationStr not in explored:
 
                 # flag-> false means current configuration has no deadlock and is default behaviour    
@@ -197,13 +197,14 @@ class Agent:
                                 
                                 flag=True
                                 break
-                            
+                    # deadlock -> prun the branch
                     if flag:
                         del(child)
                         continue
 
                     frontier.append(child)
 
+                # already visited (infinite loop)
                 else:
                     del(child)
                 
@@ -227,7 +228,7 @@ class Agent:
             counter+=1            
             
             # Add current node to explored
-            explored[self.confStr(node)]=None
+            explored[self.conf2str(node)]=None
 
             # Check if current node is goal node
             if self.isGoal(node):
@@ -241,7 +242,7 @@ class Agent:
             # Push them to frontier
             for child in children:
 
-                configurationStr = self.confStr(child)
+                configurationStr = self.conf2str(child)
                 if configurationStr not in explored:
 
                 # flag-> false means current configuration has no deadlock and is default behaviour    
@@ -258,7 +259,8 @@ class Agent:
                         del(child)
                         continue
                     
-                    child.cost=self.calCost(child,goal)+child.level     # cost = h(x) + g(x)
+                    # if h(x) is included
+                    child.cost=self.heuristic(child,goal)+child.level     # cost = h(x) + g(x)
                     # child.cost=child.level
                     frontier.put(child)
 
@@ -266,33 +268,6 @@ class Agent:
                     del(child)
                 
         return None
-
-
-
-#             char == ' ' or # floor
-#             char == '#' or # wall
-#             char == '@' or # worker on floor
-#             char == '.' or # goal
-#             char == '*' or # box on goal
-#             char == '$' or # box
-#             char == '+' ): # worker on goal
-
-
-# mat = [
-#     # 0   1   2   3   4   5   6
-#     ['#', '#', '#', '#', ' ', ' ', ' '],  # 0
-#     ['#', ' ', ' ', '#', '#', '#', ' '],  # 1
-#     ['#', '*', ' ', ' ', ' ', '#', ' '],  # 2
-#     ['#', ' ', '$', ' ', ' ', '#', ' '],  # 3
-#     ['#', '#', '#', ' ', '#', '#', '#'],  # 4
-#     ['#', ' ', '$', '+', '$', ' ', '#'],  # 5
-#     ['#', '.', '.', '@', '.', '.', '#'],  # 6
-#     ['#', ' ', ' ', '$', ' ', ' ', '#'],  # 7
-#     ['#', '#', '#', ' ', ' ', '#', '#'],  # 8
-#     [' ', ' ', '#', '#', '#', '#', ' '],  # 9
-# ]
-
-
 
 
 
@@ -312,19 +287,16 @@ class Agent:
         CLOCK = pygame.time.Clock()
         SCREEN.fill(BLACK)
 
+        print("[+] Rendering graphics...")
         for node in path:
-
-            
             # print(WINDOW_WIDTH)
-            print("[+] Rendering graphics...")
-            print(
-                f"    WINDOW_HEIGHT -> {WINDOW_HEIGHT} \n    WINDOW_WIDTH -> {WINDOW_WIDTH}")
+            # print(f"    WINDOW_HEIGHT -> {WINDOW_HEIGHT} \n    WINDOW_WIDTH -> {WINDOW_WIDTH}")
             self.drawGrid(node)
             print("[+] Done!")
 
             pygame.display.update()
 
-            time.sleep(2)
+            time.sleep(1)
 
         while True:
             for event in pygame.event.get():
@@ -363,18 +335,14 @@ class Agent:
 
                 if (x//blockSize,y//blockSize) in node.boxPos :
                     display_surface.blit(box, (y, x))
-                    if (x//blockSize,y//blockSize) in self.sokoban.goal:
-                        display_surface.blit(box_on_target, (y, x))
 
                 if (x//blockSize,y//blockSize) in self.sokoban.goal:
                     display_surface.blit(target, (y, x))
+
+                if (x//blockSize,y//blockSize) in self.sokoban.goal and (x//blockSize,y//blockSize) in node.boxPos:
+                    display_surface.blit(box_on_target, (y, x))
 
                 if (x//blockSize,y//blockSize) == (node.workerPosX,node.workerPosY):
                     display_surface.blit(player, (y, x))
                     if (x//blockSize,y//blockSize) in self.sokoban.goal:
                         display_surface.blit(player_on_target, (y, x))
-
-                    
-
-
-# main()

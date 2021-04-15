@@ -49,7 +49,7 @@ if __name__=="__main__":
 
     agnt=Agent(SBobj)
 
-    result,counter=agnt.BFS()
+    result,counter=agnt.DFS()
 
     try:
         os.remove("path.txt")
