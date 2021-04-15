@@ -1,6 +1,10 @@
 from SB_environment import Sokoban,Node
 from queue import PriorityQueue
 import copy
+import time
+import pygame
+import sys
+
 
 
 class Agent:
@@ -136,9 +140,17 @@ class Agent:
 
 
     def printPath(self,node,filename):
+        
         if(node != None):
-            self.printPath(node.parent,filename)
-            node.Print(self.sokoban,filename)        
+            
+            result=self.printPath(node.parent,filename)
+            result.append(node)
+
+            node.Print(self.sokoban,filename)
+            return result
+
+        else:
+            return []
 
 
     def DFS(self):
@@ -246,11 +258,123 @@ class Agent:
                         del(child)
                         continue
                     
-                    # child.cost=self.calCost(child,goal)+child.level     # cost = h(x) + g(x)
-                    child.cost=child.level
+                    child.cost=self.calCost(child,goal)+child.level     # cost = h(x) + g(x)
+                    # child.cost=child.level
                     frontier.put(child)
 
                 else:
                     del(child)
                 
         return None
+
+
+
+#             char == ' ' or # floor
+#             char == '#' or # wall
+#             char == '@' or # worker on floor
+#             char == '.' or # goal
+#             char == '*' or # box on goal
+#             char == '$' or # box
+#             char == '+' ): # worker on goal
+
+
+# mat = [
+#     # 0   1   2   3   4   5   6
+#     ['#', '#', '#', '#', ' ', ' ', ' '],  # 0
+#     ['#', ' ', ' ', '#', '#', '#', ' '],  # 1
+#     ['#', '*', ' ', ' ', ' ', '#', ' '],  # 2
+#     ['#', ' ', '$', ' ', ' ', '#', ' '],  # 3
+#     ['#', '#', '#', ' ', '#', '#', '#'],  # 4
+#     ['#', ' ', '$', '+', '$', ' ', '#'],  # 5
+#     ['#', '.', '.', '@', '.', '.', '#'],  # 6
+#     ['#', ' ', ' ', '$', ' ', ' ', '#'],  # 7
+#     ['#', '#', '#', ' ', ' ', '#', '#'],  # 8
+#     [' ', ' ', '#', '#', '#', '#', ' '],  # 9
+# ]
+
+
+
+
+
+    def main(self,path):
+        board=self.sokoban.board
+
+        BLACK = (0, 0, 0)
+        WINDOW_HEIGHT = len(board)*36
+        WINDOW_WIDTH = len(board[0])*36
+
+        pygame.display.set_caption('Sokoban')
+        print("[+] Initailizing game...")
+
+        pygame.init()
+        SCREEN = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
+        display_surface = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
+        CLOCK = pygame.time.Clock()
+        SCREEN.fill(BLACK)
+
+        for node in path:
+
+            
+            # print(WINDOW_WIDTH)
+            print("[+] Rendering graphics...")
+            print(
+                f"    WINDOW_HEIGHT -> {WINDOW_HEIGHT} \n    WINDOW_WIDTH -> {WINDOW_WIDTH}")
+            self.drawGrid(node)
+            print("[+] Done!")
+
+            pygame.display.update()
+
+            time.sleep(2)
+
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    print("[+] Quiting...")
+                    pygame.quit()
+                    sys.exit()
+
+    def drawGrid(self,node):
+        board=self.sokoban.board
+        WINDOW_HEIGHT = len(board)*36
+        WINDOW_WIDTH = len(board[0])*36
+
+        display_surface = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
+
+        # Load level images
+        wall = pygame.image.load('imgs\\wall.png').convert()
+        box = pygame.image.load('imgs\\box.png').convert()
+        box_on_target = pygame.image.load('imgs\\box_on_target.png').convert()
+        player_on_target = pygame.image.load(
+            'imgs\\player_on_targe.jpeg').convert()
+        space = pygame.image.load('imgs\\space.png').convert()
+        target = pygame.image.load('imgs\\target.png').convert()
+        player = pygame.image.load('imgs\\player.png').convert()
+
+        blockSize = 36  # Set the size of the grid block
+        for x in range(0, WINDOW_HEIGHT, blockSize):
+            for y in range(0, WINDOW_WIDTH, blockSize):
+
+                # print(f"({x//blockSize},{y//blockSize})    ====>    {mat[x//blockSize][y//blockSize]}")
+                if board[x//blockSize][y//blockSize] == "#":
+                    display_surface.blit(wall, (y, x))
+
+                if board[x//blockSize][y//blockSize] == " ":
+                    display_surface.blit(space, (y, x))
+
+                if (x//blockSize,y//blockSize) in node.boxPos :
+                    display_surface.blit(box, (y, x))
+                    if (x//blockSize,y//blockSize) in self.sokoban.goal:
+                        display_surface.blit(box_on_target, (y, x))
+
+                if (x//blockSize,y//blockSize) in self.sokoban.goal:
+                    display_surface.blit(target, (y, x))
+
+                if (x//blockSize,y//blockSize) == (node.workerPosX,node.workerPosY):
+                    display_surface.blit(player, (y, x))
+                    if (x//blockSize,y//blockSize) in self.sokoban.goal:
+                        display_surface.blit(player_on_target, (y, x))
+
+                    
+
+
+# main()

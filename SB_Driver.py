@@ -2,13 +2,7 @@ import os
 from SB_Agent import Agent
 from SB_environment import Sokoban
 
-#             char == ' ' or # floor
-#             char == '#' or # wall
-#             char == '@' or # worker on floor
-#             char == '.' or # goal
-#             char == '*' or # box on goal
-#             char == '$' or # box
-#             char == '+' ): # worker on goal
+    
 
 if __name__=="__main__":
     board=[
@@ -55,15 +49,20 @@ if __name__=="__main__":
 
     agnt=Agent(SBobj)
 
-    result,counter=agnt.DFS()
+    result,counter=agnt.BFS()
 
     try:
         os.remove("path.txt")
     except:
         pass
-    agnt.printPath(result,"path.txt")
+    path=agnt.printPath(result,"path.txt")
+
+    agnt.main(path)
+
     print("Nodes explored: ",counter)
     print("Path length: ",result.level)
     
 
 
+
+            
