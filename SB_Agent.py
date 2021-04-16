@@ -259,8 +259,10 @@ class Agent:
                         del(child)
                         continue
                     
-                    # if h(x) is included
+                    # h(x) is included while computing cost -> A*
                     child.cost=self.heuristic(child,goal)+child.level     # cost = h(x) + g(x)
+                    
+                    # only g(x) is considered -> breadth first search
                     # child.cost=child.level
                     frontier.put(child)
 
@@ -269,7 +271,47 @@ class Agent:
                 
         return None
 
-
+    def is_valid_value(self,char):
+        if ( char == ' ' or #floor
+            char == '#' or #wall
+            char == '@' or #worker on floor
+            char == '.' or #goal
+            char == '*' or #box on goal
+            char == '$' or #box
+            char == '+' ): #worker on goal
+            return True
+        else:
+            return False
+    
+    def MakeLevel(self,filename,level):
+        # self.queue = Queue.LifoQueue()
+        self.matrix = []
+        #        if level < 1 or level > 50:
+        if level < 1:
+            print ("ERROR: Level "+str(level)+" is out of range")
+            sys.exit(1)
+        else:
+            file = open(filename,'r')
+            level_found = False
+            for line in file:
+                row = []
+                if not level_found:
+                    if  "Level "+str(level) == line.strip():
+                        level_found = True
+                else:
+                    if line.strip() != "":
+                        row = []
+                        for c in line:
+                            if c != '\n' and self.is_valid_value(c):
+                                row.append(c)
+                            elif c == '\n': #jump to next row when newline
+                                continue
+                            else:
+                                print ("ERROR: Level "+str(level)+" has invalid value "+c)
+                                sys.exit(1)
+                        self.matrix.append(row)
+                    else:
+                        break
 
     def main(self,path):
         board=self.sokoban.board
@@ -282,35 +324,36 @@ class Agent:
         print("[+] Initailizing game...")
 
         pygame.init()
-        SCREEN = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
-        display_surface = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
+        SCREEN = pygame.display.set_mode((max(WINDOW_WIDTH,52), WINDOW_HEIGHT+50))
+        # display_surface = pygame.display.set_mode((max(WINDOW_WIDTH,52), WINDOW_HEIGHT+50))
         CLOCK = pygame.time.Clock()
         SCREEN.fill(BLACK)
 
         print("[+] Rendering graphics...")
-        for node in path:
+        i=0
+        choice=1
+        while i<len(path):
             # print(WINDOW_WIDTH)
             # print(f"    WINDOW_HEIGHT -> {WINDOW_HEIGHT} \n    WINDOW_WIDTH -> {WINDOW_WIDTH}")
-            self.drawGrid(node)
+            choice=self.drawGrid(path[i],choice)
             print("[+] Done!")
 
-            pygame.display.update()
 
-            time.sleep(1)
+            if choice==1:
+                i=i+1
+            elif choice==-1:
+                i=i-1
+            else: 
+                i=i+1
 
-        while True:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    print("[+] Quiting...")
-                    pygame.quit()
-                    sys.exit()
 
-    def drawGrid(self,node):
+
+    def drawGrid(self,node,choice):
         board=self.sokoban.board
         WINDOW_HEIGHT = len(board)*36
         WINDOW_WIDTH = len(board[0])*36
 
-        display_surface = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
+        display_surface = pygame.display.set_mode((max(WINDOW_WIDTH,52), WINDOW_HEIGHT+50))
 
         # Load level images
         wall = pygame.image.load('imgs\\wall.png').convert()
@@ -321,6 +364,12 @@ class Agent:
         space = pygame.image.load('imgs\\space.png').convert()
         target = pygame.image.load('imgs\\target.png').convert()
         player = pygame.image.load('imgs\\player.png').convert()
+
+        margin=(max(WINDOW_WIDTH,52)-(36*3))/4
+        
+        navLeft=button('black',margin,WINDOW_HEIGHT+4,36,36,'Left')
+        navRight=button('black',2*margin+36,WINDOW_HEIGHT+4,36,36,'Right')
+        navAuto=button('black',3*margin+2*36,WINDOW_HEIGHT+4,36,36,'Auto')
 
         blockSize = 36  # Set the size of the grid block
         for x in range(0, WINDOW_HEIGHT, blockSize):
@@ -346,3 +395,87 @@ class Agent:
                     display_surface.blit(player, (y, x))
                     if (x//blockSize,y//blockSize) in self.sokoban.goal:
                         display_surface.blit(player_on_target, (y, x))
+
+
+        navLeft.draw(display_surface,outline='white')
+        navRight.draw(display_surface,outline='white')
+        navAuto.draw(display_surface,outline='white')
+
+        pygame.display.update()
+
+        if choice!=0:
+
+            while True:
+                for event in pygame.event.get():
+
+                    if event.type==pygame.MOUSEBUTTONDOWN:
+                        pos=pygame.mouse.get_pos()
+
+                        if navLeft.isOver(pos):
+                            return -1
+
+                        elif navRight.isOver(pos):
+                            return 1
+
+                        elif navAuto.isOver(pos):
+                            return 0
+
+                    if event.type == pygame.QUIT:
+                        print("[+] Quiting...")
+                        pygame.quit()
+                        sys.exit()       
+
+        else:
+            start_time = time.time()
+            while True:
+                current_time = time.time()
+                elapsed_time = current_time - start_time
+
+                if elapsed_time>1:
+                    return 0
+
+                for event in pygame.event.get():
+
+                    if event.type==pygame.MOUSEBUTTONDOWN:
+                        pos=pygame.mouse.get_pos()
+
+                        if navLeft.isOver(pos):
+                            return -1
+
+                        elif navRight.isOver(pos):
+                            return 1
+
+
+
+            return choice     
+
+
+class button:
+    def __init__(self, color, x,y,width,height, text=''):
+        self.color = color
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        self.text = text
+
+    def draw(self,win,outline=None):
+        #Call this method to draw the button on the screen
+        if outline:
+
+            pygame.draw.rect(win, outline, (self.x-2,self.y-2,self.width+4,self.height+4),0)
+            
+        pygame.draw.rect(win, self.color, (self.x,self.y,self.width,self.height),0)
+        
+        if self.text != '':
+            font = pygame.font.SysFont('comicsans', 15)
+            text = font.render(self.text, 1, (255,255,255))
+            win.blit(text, (self.x + (self.width/2 - text.get_width()/2), self.y + (self.height/2 - text.get_height()/2)))
+
+    def isOver(self, pos):
+        #Pos is the mouse position or a tuple of (x,y) coordinates
+        if pos[0] > self.x and pos[0] < self.x + self.width:
+            if pos[1] > self.y and pos[1] < self.y + self.height:
+                return True
+            
+        return False
