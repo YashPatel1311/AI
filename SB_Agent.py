@@ -313,7 +313,7 @@ class Agent:
                     else:
                         break
 
-    def main(self,path):
+    def Interactive(self,path):
         board=self.sokoban.board
 
         BLACK = (0, 0, 0)
@@ -336,8 +336,6 @@ class Agent:
             # print(WINDOW_WIDTH)
             # print(f"    WINDOW_HEIGHT -> {WINDOW_HEIGHT} \n    WINDOW_WIDTH -> {WINDOW_WIDTH}")
             choice=self.drawGrid(path[i],choice)
-            print("[+] Done!")
-
 
             if choice==1:
                 i=i+1
@@ -444,6 +442,11 @@ class Agent:
 
                         elif navRight.isOver(pos):
                             return 1
+
+                    if event.type == pygame.QUIT:
+                        print("[+] Quiting...")
+                        pygame.quit()
+                        sys.exit()
 
 
 
