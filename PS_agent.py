@@ -1,3 +1,5 @@
+
+
 from queue import PriorityQueue
 from PS_environment  import PegSolitare
 import numpy as np
@@ -13,7 +15,7 @@ class agent:
        
 
         self.frontier=PriorityQueue()
-        # self.explored={}
+        self.explored={}
     
     def cal_cost(self,config):
       # config = node.config
@@ -46,8 +48,8 @@ class agent:
 
     def BFS(self):
         frontier = self.frontier
-        # explored = self.explored
-        self.puzzle.root.cost = self.cal_cost(self.puzzle.root.config)
+        explored = self.explored
+        # self.puzzle.root.cost = self.cal_cost(self.puzzle.root.config)
         frontier.put(self.puzzle.root)
         counter=0
         while not frontier.empty():
@@ -57,29 +59,27 @@ class agent:
             
             node = frontier.get()
             conf = node.config
-            if counter%100000==0:
+            if counter%10000==0:
               print(node)
-            # confStr = str(list(map(int,conf))).replace(",","").replace("[","").replace("]","").replace(" ","")
-            # explored[confStr]=node
+            confStr = str(list(map(int,conf))).replace(",","").replace("[","").replace("]","").replace(" ","")
+            explored[confStr]=node
             
             if self.isGoal(node):
-                return node
+                return node,counter
 
             neighbours=self.puzzle.moves(node)
 
             for neighbour in neighbours:
-              neighbour.cost = self.cal_cost(neighbour.config)
+            #   neighbour.cost = self.cal_cost(neighbour.config)
               # print(neighbour)
-              # configuration = neighbour.config
-              # configurationStr = str(list(map(int,configuration))).replace(",","").replace("[","").replace("]","").replace(" ","")
-              # if configurationStr not in explored:
-              #     frontier.put(neighbour)
-              # else:
-              #     del(neighbour)
-              frontier.put(neighbour)
+              configuration = neighbour.config
+              configurationStr = str(list(map(int,configuration))).replace(",","").replace("[","").replace("]","").replace(" ","")
+              if configurationStr not in explored:
+                  frontier.put(neighbour)
+              else:
+                  del(neighbour)
 
         return None
-
 
     def DFS(self):
       # self.puzzle.root.cost = self.cal_cost(self.puzzle.root.config)
@@ -104,6 +104,4 @@ class agent:
             frontier.append(neighbour)
           # frontier.extend(neighbours)
       return None
-
-
 

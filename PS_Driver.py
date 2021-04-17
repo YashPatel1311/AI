@@ -7,10 +7,13 @@ def driver():
     # gnode=Node(None,agnt.goal,0)
     # print(gnode)
 
-    node,iterations=agnt.DFS()
+    node,iterations=agnt.BFS()
 
     if not node:
         print("\n no sol")
 
     print("Total iterations: ",iterations)
     agnt.printPath(node)
+
+if __name__=="__main__":
+    driver()

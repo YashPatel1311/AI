@@ -3,9 +3,12 @@ import sys
 from tabulate import tabulate
 import copy
 
+
+
 # 0 -> up
-# 1 -> down
-# 2 -> left
+# 1 -> downe
+                 
+# 2 -> lefte
 # 3 -> right
 # blank -> False
 # peg -> True
@@ -195,9 +198,9 @@ class Node:
         return f"{table}"
 
     def calCost(self):
-        hn=32-self.config.count(False)
+        hn=32-self.config[1:].count(False)
 
-        return hn
+        return hn+self.level
 
     def __lt__(self, other):
         # return self.level<other.level
