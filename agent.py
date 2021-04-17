@@ -5,7 +5,7 @@ import numpy as np
 class agent:
 
     def __init__(self,puzzle,goal):
-        if (np.size(puzzle.initial,0) == np.size(goal,0)) and (np.size(puzzle.initial,1) == np.size(goal,1)):
+        # if (np.size(puzzle.initial,0) == np.size(goal,0)) and (np.size(puzzle.initial,1) == np.size(goal,1)):
             self.puzzle=puzzle
             self.goal=goal
             self.frontier=PriorityQueue()
@@ -51,3 +51,32 @@ class agent:
                     del(neighbour)
 
         return None
+
+
+    def reverse(self,depth,root):
+        # result=[]
+        frontier = self.frontier
+        explored = self.explored
+
+        frontier.put(root)
+
+        while not frontier.empty():
+            node = frontier.get()
+            if node.level==depth:
+                frontier.put(node)
+                break
+            conf = node.config
+            explored[np.array2string(conf)]=node
+
+            neighbours=self.puzzle.moves(node)
+
+            for neighbour in neighbours:
+                configuration = neighbour.config
+                if np.array2string(configuration) not in explored:
+                    frontier.put(neighbour)
+                else:
+                    del(neighbour)
+
+        return frontier
+
+
