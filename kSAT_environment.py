@@ -5,41 +5,6 @@ from tabulate import tabulate
 import copy
 
 #class puzzle would initialize the environment
-def evaluate(problem,truthVal):
-    '''
-    Integer input representing truth values of variables in binary \n
-    Problem instance \n
-    Goal : to find the whether truth value of problem is True or not. \n
-    '''
-    # truthVal = bin(truthVal)
-    # truthVal=truthVal[2:]
-    truthVal = format(truthVal,"026b")
-    n = len(truthVal)-1
-    # exp = ""
-    tmp1 = True
-    # assuming problem is list of list containing variables as dtype=str
-    for i in problem:
-        # exp += "("
-        tmp2 = False
-        for j in i:
-            
-            if j.isupper():
-                # exp += str(truthVal[ord(j)-ord("A")])
-                tmp2 |= bool(int(truthVal[n-(ord(j)-ord("A"))]))
-            elif j.islower():
-                # exp += str(truthVal[ord(j)-ord("a")])
-                tmp2 |= (not bool(int(truthVal[n-(ord(j)-ord("a"))])))
-            # exp += "∨"
-            if tmp2:
-                break
-        tmp1 &= tmp2
-    #     exp = exp[:-1]
-    #     exp += ") ∧"
-    # exp = exp[:-2]
-    if tmp1:
-        return truthVal
-    return None
-
 
 def generator(k,n,m):
     '''
@@ -137,7 +102,7 @@ class Node:
         self.problem=problem
         self.config=config
         self.level=level
-        self.cost=self.heuristic()
+        self.cost=None
 
     def __lt__(self, other):
         return self.cost<other.cost
@@ -173,8 +138,7 @@ class Node:
             del problem[x]
         
         return problem
-
-
+    
     def heuristic(self):
         try:
             return len(self.problem)
