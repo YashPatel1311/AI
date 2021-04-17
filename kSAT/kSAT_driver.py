@@ -1,4 +1,4 @@
-from ksat_agent import Agent
+from kSAT_agent import Agent
 
 def driver():
     agt=Agent(3,20,70)
